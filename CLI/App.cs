@@ -1,4 +1,7 @@
 ﻿using CLI.Extensions;
+using DataAccess;
+using DataAccess.Interfaces;
+using DataAccess.Models;
 
 namespace CLI
 {
@@ -9,17 +12,28 @@ namespace CLI
 
         private string? _arg1;
         private string? _arg2;
-        private bool _requestedExit = false;
+        private bool _requestedExit;
+        private IRepository<ArgumentsRecord> _repository;
 
+        public App()
+        {
+            _repository = new ArgumentsRepository();
+            _requestedExit = false;
+        }
 
-        public void Run()
+        ~App()
+        {
+            _repository.Dispose();
+        }
+
+        public async Task Run()
         {
             Console.WriteLine("Welcome to ATEA Technical Task program.\n");
 
             while(!_requestedExit)
             {
                 PrintArguments();
-                ExecuteAction(PrintMenu().Key);
+                await ExecuteAction(PrintMenu().Key);
                 PrintSeparator();
             }
         }
@@ -35,6 +49,7 @@ namespace CLI
         private ConsoleKeyInfo PrintMenu()
         {
             Console.WriteLine("(S)et arguments");
+            Console.WriteLine("(L)ist previous arguments (database)");
             if(ArgumentsAreValid())
             {
                 Console.WriteLine("(A)dd arguments");
@@ -44,7 +59,7 @@ namespace CLI
             return Console.ReadKey(true);
         }
 
-        private void ExecuteAction(ConsoleKey key)
+        private async Task ExecuteAction(ConsoleKey key)
         {
             switch(key)
             {
@@ -56,7 +71,13 @@ namespace CLI
                 case ConsoleKey.A:
                     {
                         if (!ArgumentsAreValid()) goto default;
-                        PrintAdditionResult(this.AddArguments(_arg1, _arg2));
+                        PrintAdditionResult(this.AddArguments(_arg1!, _arg2!));
+                        break;
+                    }
+                case ConsoleKey.L:
+                    {
+                        List<ArgumentsRecord> records = await _repository.GetAll();
+                        PrintDatabaseRecords(records);
                         break;
                     }
                 case ConsoleKey.Q:
@@ -100,6 +121,8 @@ namespace CLI
 
             _arg1 = inputChunks[0];
             _arg2 = inputChunks[1];
+
+            _repository.Insert(new ArgumentsRecord(_arg1, _arg2));
         }
 
         private void PrintSeparator(int length = 50)
@@ -115,6 +138,15 @@ namespace CLI
         private void PrintAdditionResult(string result)
         {
             Console.WriteLine($"\nResult: {result}");
+        }
+
+        private void PrintDatabaseRecords(List<ArgumentsRecord> records)
+        {
+            Console.WriteLine();
+            foreach (ArgumentsRecord record in records) 
+            {
+                Console.WriteLine($"{record.Id}) Arg1 = {record.Arg1}; Arg2 = {record.Arg2}");
+            }
         }
 
         private void PrintInvalidInputMessage(string message)

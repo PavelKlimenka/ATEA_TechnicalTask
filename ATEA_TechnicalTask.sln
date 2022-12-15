@@ -5,7 +5,7 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CLI", "CLI\CLI.csproj", "{6F097608-AF9A-4926-A5D4-0B42776A911C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLI.Tests", "CLI.Tests\CLI.Tests.csproj", "{EB877F57-4555-44B6-B5F8-83A54DDD408A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ATEA_TechnicalTask.Tests", "ATEA_TechnicalTask.Tests\ATEA_TechnicalTask.Tests.csproj", "{EB877F57-4555-44B6-B5F8-83A54DDD408A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{97F5A65C-513F-4E97-B592-2D78DB06D330}"
 EndProject

@@ -1,6 +1,7 @@
+using CLI;
 using CLI.Utils.Extensions;
 
-namespace CLI.Tests
+namespace ATEA_TechnicalTask.Tests
 {
     public class AppExtensionsTests
     {

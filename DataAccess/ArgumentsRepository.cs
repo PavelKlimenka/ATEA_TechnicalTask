@@ -21,19 +21,18 @@ namespace DataAccess
             _connection = new SQLiteConnection($"Data Source={_databaseFilePath}; Version=3;");
             _connection.Open();
         }
+        public void Dispose()
+        {
+            _connection.Dispose();
+        }
 
         public async Task Delete(ArgumentsRecord entity)
         {
             SQLiteCommand command = new(
-                "DELETE FROM Arguments" +
-                $"WHERE id = {entity.Id}",
+                "DELETE FROM Arguments " +
+                $"WHERE id={entity.Id}",
                 _connection);
             await command.ExecuteNonQueryAsync();
-        }
-
-        public void Dispose()
-        {
-            _connection.Dispose();
         }
 
         public async Task<List<ArgumentsRecord>> GetAll()
@@ -57,12 +56,13 @@ namespace DataAccess
         {
             ArgumentsRecord result = new();
             SQLiteCommand command = new(
-                "SELECT * FROM Arguments" +
-                $"WHERE id = {id}",
+                "SELECT * FROM Arguments " +
+                $"WHERE id={id}",
                 _connection);
             using DbDataReader reader = await command.ExecuteReaderAsync();
             if(reader.HasRows)
             {
+                reader.Read();
                 result.Id = reader.GetInt32(0);
                 result.Arg1 = reader.GetString(1);
                 result.Arg2 = reader.GetString(2);
@@ -73,7 +73,7 @@ namespace DataAccess
         public async Task Insert(ArgumentsRecord entity)
         {
             SQLiteCommand command = new(
-                "INSERT INTO Arguments(arg1, arg2)" +
+                "INSERT INTO Arguments(arg1, arg2) " +
                 $"VALUES ('{entity.Arg1}','{entity.Arg2}')", 
                 _connection);
             await command.ExecuteNonQueryAsync();
@@ -82,8 +82,8 @@ namespace DataAccess
         public async Task Update(ArgumentsRecord entity)
         {
             SQLiteCommand command = new(
-                "UPDATE Arguments" +
-                $"SET arg1='{entity.Arg1}', arg2='{entity.Arg2}'" +
+                "UPDATE Arguments " +
+                $"SET arg1='{entity.Arg1}', arg2='{entity.Arg2}' " +
                 $"WHERE id={entity.Id}", 
                 _connection);
             await command.ExecuteNonQueryAsync();
@@ -95,7 +95,7 @@ namespace DataAccess
             using SQLiteConnection connection = new SQLiteConnection($"Data Source={filePath}; Version=3;");
             
             SQLiteCommand command = new SQLiteCommand(
-                $"CREATE TABLE IF NOT EXISTS Arguments (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                $"CREATE TABLE IF NOT EXISTS Arguments (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                 "arg1 NVARCHAR(50), arg2 NVARCHAR(50))",
                 connection);
 

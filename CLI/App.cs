@@ -1,11 +1,14 @@
-﻿using CLI.Extensions;
+﻿using CLI.Interfaces;
+using CLI.Utils;
+using CLI.Utils.Exceptions;
+using CLI.Utils.Extensions;
 using DataAccess;
 using DataAccess.Interfaces;
 using DataAccess.Models;
 
 namespace CLI
 {
-    public class App
+    public class App : IDisposable
     {
         private const char SeparatorCharacter = '-';
         private const int MaxArgumentLength = 50;
@@ -14,27 +17,42 @@ namespace CLI
         private string? _arg2;
         private bool _requestedExit;
         private IRepository<ArgumentsRecord> _repository;
+        private ILogger _logger;
 
         public App()
         {
             _repository = new ArgumentsRepository();
             _requestedExit = false;
+            _logger = new ConsoleLogger();
         }
 
         ~App()
         {
-            _repository.Dispose();
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            _repository.Dispose();             
         }
 
         public async Task Run()
         {
-            Console.WriteLine("Welcome to ATEA Technical Task program.\n");
+            Console.WriteLine("Welcome to ATEA Technical Task program.");
 
             while(!_requestedExit)
             {
-                PrintArguments();
-                await ExecuteAction(PrintMenu().Key);
-                PrintSeparator();
+                try
+                {
+                    Console.WriteLine();
+                    PrintArguments();
+                    await ExecuteAction(PrintMenu().Key);
+                    PrintSeparator();
+                }
+                catch(Exception e)
+                {
+                    _logger.LogError(e.Message);
+                }
             }
         }
 
@@ -42,19 +60,18 @@ namespace CLI
         {
             if (ArgumentsAreValid())
             {
-                Console.WriteLine($"Current arguments: 1) '{_arg1}' 2) '{_arg2}'");
+                Console.WriteLine($"Current arguments: arg1 = {_arg1}; arg2 = {_arg2}");
             }
         }
 
         private ConsoleKeyInfo PrintMenu()
         {
-            Console.WriteLine("(S)et arguments");
-            Console.WriteLine("(L)ist previous arguments (database)");
-            if(ArgumentsAreValid())
-            {
-                Console.WriteLine("(A)dd arguments");
-            }
-            Console.WriteLine("(Q)uit");
+            Console.WriteLine($"({ConsoleKey.S})et arguments");
+            if(ArgumentsAreValid()) Console.WriteLine($"({ConsoleKey.A})dd arguments to each other");
+            Console.WriteLine($"({ConsoleKey.L})ist previous arguments (database)");
+            Console.WriteLine($"({ConsoleKey.F})etch and set arguments from database by number");
+            Console.WriteLine($"({ConsoleKey.D})elete arguments from database by number");
+            Console.WriteLine($"({ConsoleKey.Q})uit");
 
             return Console.ReadKey(true);
         }
@@ -77,7 +94,20 @@ namespace CLI
                 case ConsoleKey.L:
                     {
                         List<ArgumentsRecord> records = await _repository.GetAll();
-                        PrintDatabaseRecords(records);
+                        if (records.Count == 0)
+                            Console.WriteLine("\nDatabase is empty!");
+                        else
+                            PrintDatabaseRecords(records.ToArray());
+                        break;
+                    }
+                case ConsoleKey.F:
+                    {
+                        await FetchAndSetDatabaseArgumentsByNumber();
+                        break;
+                    }
+                case ConsoleKey.D:
+                    {
+                        await DeleteDatabaseArgumentsByNumber();
                         break;
                     }
                 case ConsoleKey.Q:
@@ -96,28 +126,19 @@ namespace CLI
 
         private void SetArguments()
         {
-            Console.WriteLine("Enter two arguments separated by a whitespace character:");
-            string? input = Console.ReadLine();
+            Console.WriteLine("\nEnter two arguments separated by a whitespace character:");
+            string? input = Console.ReadLine()?.Trim();
 
             if (string.IsNullOrEmpty(input))
-            {
-                PrintInvalidInputMessage("there should be 2 arguments separated by a whitespace character.");
-                return;
-            }
+                throw new InvalidInputException("there should be 2 arguments separated by a whitespace character.");
 
-            string[] inputChunks = input.Split(' ').Select(e => e.Trim()).ToArray();
+            string[] inputChunks = input.Split(' ').Select(e => e.Trim()).Where(e => !string.IsNullOrWhiteSpace(e)).ToArray();
 
             if (inputChunks.Length != 2)
-            {
-                PrintInvalidInputMessage("there should be 2 arguments separated by a whitespace character.");
-                return;
-            }
+                throw new InvalidInputException("there should be 2 arguments separated by a whitespace character.");
 
             if(inputChunks.Any(e => e.Length > MaxArgumentLength))
-            {
-                PrintInvalidInputMessage($"argument length shouldn't exceed the maximum length ({MaxArgumentLength})");
-                return;
-            }
+                throw new InvalidInputException($"argument length shouldn't exceed the maximum length ({MaxArgumentLength})");
 
             _arg1 = inputChunks[0];
             _arg2 = inputChunks[1];
@@ -140,7 +161,7 @@ namespace CLI
             Console.WriteLine($"\nResult: {result}");
         }
 
-        private void PrintDatabaseRecords(List<ArgumentsRecord> records)
+        private void PrintDatabaseRecords(params ArgumentsRecord[] records)
         {
             Console.WriteLine();
             foreach (ArgumentsRecord record in records) 
@@ -149,9 +170,34 @@ namespace CLI
             }
         }
 
-        private void PrintInvalidInputMessage(string message)
+        private async Task FetchAndSetDatabaseArgumentsByNumber()
         {
-            Console.WriteLine($"\nInvalid input: {message}");
+            Console.WriteLine("\nEnter arguments number:");
+            string? input = Console.ReadLine();
+
+            if(string.IsNullOrEmpty(input) || !int.TryParse(input, out int inputInt))
+                throw new InvalidInputException("not a integer number");
+
+            ArgumentsRecord record = await _repository.GetById(inputInt);
+            if (string.IsNullOrEmpty(record.Arg1) || string.IsNullOrEmpty(record.Arg2))
+                throw new InvalidInputException($"record with the number {input} doesn't exist in database");
+
+            _arg1 = record.Arg1;
+            _arg2 = record.Arg2;
+            PrintDatabaseRecords(record);
+        }
+
+        private async Task DeleteDatabaseArgumentsByNumber()
+        {
+            Console.WriteLine("\nEnter arguments number:");
+            string? input = Console.ReadLine();
+
+            if(string.IsNullOrEmpty(input) || !int.TryParse(input, out int inputInt))
+                throw new InvalidInputException("not a integer number");
+
+            await _repository.Delete(new ArgumentsRecord() { Id = inputInt });
+
+            Console.WriteLine("\nRecord was deleted");
         }
 
     }

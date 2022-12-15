@@ -1,5 +1,4 @@
-
-using CLI.Extensions;
+using CLI.Utils.Extensions;
 
 namespace CLI.Tests
 {

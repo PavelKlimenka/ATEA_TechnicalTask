@@ -2,7 +2,7 @@
 
 namespace CLI
 {
-    internal class App
+    public class App
     {
         private const char SeparatorCharacter = '-';
         private const int MaxArgumentLength = 50;
@@ -14,9 +14,10 @@ namespace CLI
 
         public void Run()
         {
+            Console.WriteLine("Welcome to ATEA Technical Task program.\n");
+
             while(!_requestedExit)
             {
-                Console.WriteLine("Welcome to ATEA Technical Task program.");
                 PrintArguments();
                 ExecuteAction(PrintMenu().Key);
                 PrintSeparator();

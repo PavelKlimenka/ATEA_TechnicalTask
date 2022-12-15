@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CLI.Extensions;
 
 namespace CLI
 {
@@ -59,17 +55,18 @@ namespace CLI
                 case ConsoleKey.A:
                     {
                         if (!ArgumentsAreValid()) goto default;
+                        PrintAdditionResult(this.AddArguments(_arg1, _arg2));
                         break;
                     }
                 case ConsoleKey.Q:
                     {
                         _requestedExit = true;
-                        Console.WriteLine("Goodbye!");
+                        Console.WriteLine("\nGoodbye!");
                         break;
                     }
                 default:
                     {
-                        Console.WriteLine("\nWrong input. Try again\n");
+                        Console.WriteLine("\nWrong input. Try again");
                         break;
                     }
             }
@@ -82,7 +79,7 @@ namespace CLI
 
             if (string.IsNullOrEmpty(input))
             {
-                Console.WriteLine("\nInvalid input: there should be 2 arguments separated by a whitespace character.\n");
+                PrintInvalidInputMessage("there should be 2 arguments separated by a whitespace character.");
                 return;
             }
 
@@ -90,7 +87,13 @@ namespace CLI
 
             if (inputChunks.Length != 2)
             {
-                Console.WriteLine("\nInvalid input: there should be 2 arguments separated by a whitespace character.\n");
+                PrintInvalidInputMessage("there should be 2 arguments separated by a whitespace character.");
+                return;
+            }
+
+            if(inputChunks.Any(e => e.Length > MaxArgumentLength))
+            {
+                PrintInvalidInputMessage($"argument length shouldn't exceed the maximum length ({MaxArgumentLength})");
                 return;
             }
 
@@ -106,6 +109,16 @@ namespace CLI
         private bool ArgumentsAreValid()
         {
             return _arg1 != null && _arg2 != null;
+        }
+
+        private void PrintAdditionResult(string result)
+        {
+            Console.WriteLine($"\nResult: {result}");
+        }
+
+        private void PrintInvalidInputMessage(string message)
+        {
+            Console.WriteLine($"\nInvalid input: {message}");
         }
 
     }

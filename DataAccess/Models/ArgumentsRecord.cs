@@ -13,5 +13,12 @@ namespace DataAccess.Models
             Arg1 = arg1;
             Arg2 = arg2;
         }
+
+        public ArgumentsRecord(ArgumentsRecord record)
+        {
+            Id = record.Id;
+            Arg1 = record.Arg1;
+            Arg2 = record.Arg2;
+        }
     }
 }

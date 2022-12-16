@@ -1,4 +1,5 @@
-﻿using ATEA_TechnicalTask.Shared.Interfaces;
+﻿using ATEA_TechnicalTask.Shared;
+using ATEA_TechnicalTask.Shared.Interfaces;
 using DataAccess.Interfaces;
 using DataAccess.Models;
 using System.Data.Common;
@@ -9,16 +10,16 @@ namespace DataAccess
 {
     public class ArgumentsRepository : IRepository<ArgumentsRecord>
     {
-        private const string DatabaseFileName = "ATEATechTask.db";
+        private readonly string _databaseFileName = "ATEATechTask.db";
         private string _databaseFilePath;
         private SQLiteConnection _connection;
         private ILogger _logger;
 
-        public ArgumentsRepository(ILogger logger)
+        public ArgumentsRepository(ILogger logger, string? databaseFilename = null)
         {
             _logger = logger;
-            string executablePath = Path.GetFullPath(Path.Combine(Assembly.GetExecutingAssembly().Location, ".."));
-            _databaseFilePath = Path.Combine(executablePath, DatabaseFileName);
+            if(databaseFilename != null) _databaseFileName = databaseFilename;
+            _databaseFilePath = Path.Combine(Utils.GetExecutableDirectoryPath(), _databaseFileName);
 
             if(!File.Exists(_databaseFilePath)) CreateDatabase(_databaseFilePath);
 
@@ -35,14 +36,17 @@ namespace DataAccess
 
         public void Dispose()
         {
+            _connection.Close();
             _connection.Dispose();
         }
 
         public async Task<ArgumentsRecord> Delete(ArgumentsRecord entity)
         {
+            ArgumentsRecord result = new(entity);
+
             try
             {
-                SQLiteCommand command = new(
+                using SQLiteCommand command = new(
                     "DELETE FROM Arguments " +
                     $"WHERE id={entity.Id}",
                     _connection);
@@ -53,7 +57,7 @@ namespace DataAccess
                 _logger.LogError($"Wasn't able to delete record with id '{entity.Id}'. Message: {e.Message}");
             }
 
-            return entity;
+            return result;
         }
 
         public async Task<List<ArgumentsRecord>> GetAll()
@@ -61,7 +65,7 @@ namespace DataAccess
             List<ArgumentsRecord> result = new();
             try
             {
-                SQLiteCommand command = new("SELECT * FROM Arguments", _connection);
+                using SQLiteCommand command = new("SELECT * FROM Arguments", _connection);
                 using DbDataReader reader = await command.ExecuteReaderAsync();
                 while(reader.Read())
                 {
@@ -87,7 +91,7 @@ namespace DataAccess
 
             try
             {
-                SQLiteCommand command = new(
+                using SQLiteCommand command = new(
                     "SELECT * FROM Arguments " +
                     $"WHERE id={id}",
                     _connection);
@@ -110,28 +114,32 @@ namespace DataAccess
 
         public async Task<ArgumentsRecord> Insert(ArgumentsRecord entity)
         {
+            ArgumentsRecord result = new(entity);
+
             try
             {
-                SQLiteCommand command = new(
+                using SQLiteCommand command = new(
                     "INSERT INTO Arguments(arg1, arg2) " +
                     $"VALUES ('{entity.Arg1}','{entity.Arg2}')", 
                     _connection);
                 await command.ExecuteNonQueryAsync();
-                entity.Id = (int)_connection.LastInsertRowId;
+                result.Id = (int)_connection.LastInsertRowId;
             }
             catch(Exception e)
             {
                 _logger.LogError($"Wasn't able to insert record. Message: {e.Message}");
             }
 
-            return entity;
+            return result;
         }
 
         public async Task<ArgumentsRecord> Update(ArgumentsRecord entity)
         {
+            ArgumentsRecord result = new(entity);
+
             try
             {
-                SQLiteCommand command = new(
+                using SQLiteCommand command = new(
                     "UPDATE Arguments " +
                     $"SET arg1='{entity.Arg1}', arg2='{entity.Arg2}' " +
                     $"WHERE id={entity.Id}", 
@@ -143,7 +151,7 @@ namespace DataAccess
                 _logger.LogError($"Wasn't able to update record with id '{entity.Id}'. Message: {e.Message}");
             }
 
-            return entity;
+            return result;
         }
 
         private void CreateDatabase(string filePath)
@@ -153,7 +161,7 @@ namespace DataAccess
                 SQLiteConnection.CreateFile(filePath);
                 using SQLiteConnection connection = new SQLiteConnection($"Data Source={filePath}; Version=3;");
                 
-                SQLiteCommand command = new SQLiteCommand(
+                using SQLiteCommand command = new SQLiteCommand(
                     $"CREATE TABLE IF NOT EXISTS Arguments (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "arg1 NVARCHAR(50), arg2 NVARCHAR(50))",
                     connection);

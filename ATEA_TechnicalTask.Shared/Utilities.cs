@@ -2,7 +2,7 @@
 
 namespace ATEA_TechnicalTask.Shared
 {
-    public static class Utils
+    public static class Utilities
     {
         public static string GetExecutableDirectoryPath()
         {

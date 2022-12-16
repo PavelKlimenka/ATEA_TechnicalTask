@@ -65,10 +65,9 @@ namespace ATEA_TechnicalTask.Tests
             ArgumentsRecord record = new("Delete", "record");
             record.Id = (await _repository.Insert(record)).Id;
 
-            ArgumentsRecord returnedRecord = await _repository.Delete(record);
+            await _repository.Delete(record);
             ArgumentsRecord emptyRecord = await _repository.GetById(record.Id);
 
-            Assert.Equal(record, returnedRecord, new ArgumentsComparer());
             Assert.Equal(-1, emptyRecord.Id);
             Assert.Null(emptyRecord.Arg1);
             Assert.Null(emptyRecord.Arg2);

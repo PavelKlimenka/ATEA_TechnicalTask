@@ -1,5 +1,5 @@
 using CLI;
-using CLI.Utils.Extensions;
+using CLI.Utilities.Extensions;
 
 namespace ATEA_TechnicalTask.Tests
 {

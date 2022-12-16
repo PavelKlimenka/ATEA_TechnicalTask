@@ -4,6 +4,9 @@ using System.Data.SQLite;
 
 namespace ATEA_TechnicalTask.Tests.Fixtures
 {
+    /// <summary>
+    /// Fixture used to create database file for testing
+    /// </summary>
     public class ArgumentsRepositoryTestsFixture : IDisposable
     {
         public const string DatabaseFilename = "ATEA_TechnicalTask_Test.db";
@@ -11,7 +14,7 @@ namespace ATEA_TechnicalTask.Tests.Fixtures
 
         public ArgumentsRepositoryTestsFixture()
         {
-            _databaseFilePath = Path.Combine(Utils.GetExecutableDirectoryPath(), DatabaseFilename);
+            _databaseFilePath = Path.Combine(Utilities.GetExecutableDirectoryPath(), DatabaseFilename);
             if (File.Exists(_databaseFilePath)) File.Delete(_databaseFilePath);
             CreateDatabase(_databaseFilePath);
         }

@@ -1,7 +1,7 @@
 ﻿using ATEA_TechnicalTask.Shared;
 using ATEA_TechnicalTask.Shared.Interfaces;
-using CLI.Utils.Exceptions;
-using CLI.Utils.Extensions;
+using CLI.Utilities.Exceptions;
+using CLI.Utilities.Extensions;
 using DataAccess;
 using DataAccess.Interfaces;
 using DataAccess.Models;
@@ -82,8 +82,8 @@ namespace CLI
             Console.WriteLine($"> ({ConsoleKey.S})et arguments");
             if(ArgumentsAreValid()) Console.WriteLine($"> ({ConsoleKey.A})dd arguments to each other");
             Console.WriteLine($"> ({ConsoleKey.L})ist previous arguments (database)");
-            Console.WriteLine($"> ({ConsoleKey.F})etch and set arguments from database by number");
-            Console.WriteLine($"> ({ConsoleKey.D})elete arguments from database by number");
+            Console.WriteLine($"> ({ConsoleKey.F})etch and set arguments from database by id");
+            Console.WriteLine($"> ({ConsoleKey.D})elete arguments from database by id");
             Console.WriteLine($"> ({ConsoleKey.Q})uit");
 
             return Console.ReadKey(true);

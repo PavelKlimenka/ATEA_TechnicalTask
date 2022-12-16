@@ -19,7 +19,7 @@ namespace DataAccess
         {
             _logger = logger;
             if(databaseFilename != null) _databaseFileName = databaseFilename;
-            _databaseFilePath = Path.Combine(Utils.GetExecutableDirectoryPath(), _databaseFileName);
+            _databaseFilePath = Path.Combine(Utilities.GetExecutableDirectoryPath(), _databaseFileName);
 
             if(!File.Exists(_databaseFilePath)) CreateDatabase(_databaseFilePath);
 
@@ -40,24 +40,21 @@ namespace DataAccess
             _connection.Dispose();
         }
 
-        public async Task<ArgumentsRecord> Delete(ArgumentsRecord entity)
+        public async Task Delete(ArgumentsRecord entity)
         {
-            ArgumentsRecord result = new(entity);
-
             try
             {
                 using SQLiteCommand command = new(
                     "DELETE FROM Arguments " +
-                    $"WHERE id={entity.Id}",
+                    $"WHERE id=$id",
                     _connection);
+                command.Parameters.AddWithValue("$id", entity.Id);
                 await command.ExecuteNonQueryAsync();
             }
             catch(Exception e)
             {
                 _logger.LogError($"Wasn't able to delete record with id '{entity.Id}'. Message: {e.Message}");
             }
-
-            return result;
         }
 
         public async Task<List<ArgumentsRecord>> GetAll()
@@ -120,8 +117,10 @@ namespace DataAccess
             {
                 using SQLiteCommand command = new(
                     "INSERT INTO Arguments(arg1, arg2) " +
-                    $"VALUES ('{entity.Arg1}','{entity.Arg2}')", 
+                    "VALUES ($arg1, $arg2)", 
                     _connection);
+                command.Parameters.AddWithValue("$arg1", entity.Arg1);
+                command.Parameters.AddWithValue("$arg2", entity.Arg2);
                 await command.ExecuteNonQueryAsync();
                 result.Id = (int)_connection.LastInsertRowId;
             }
@@ -141,9 +140,11 @@ namespace DataAccess
             {
                 using SQLiteCommand command = new(
                     "UPDATE Arguments " +
-                    $"SET arg1='{entity.Arg1}', arg2='{entity.Arg2}' " +
+                    $"SET arg1=$arg1, arg2=$arg2 " +
                     $"WHERE id={entity.Id}", 
                     _connection);
+                command.Parameters.AddWithValue("$arg1", entity.Arg1);
+                command.Parameters.AddWithValue("$arg2", entity.Arg2);
                 await command.ExecuteNonQueryAsync();
             }
             catch(Exception e)

@@ -2,7 +2,7 @@
 {
     public interface ILogger
     {
-        public LogLevel LogLevel { get; set; }
+        LogLevel LogLevel { get; set; }
 
         void LogInfo(string message);
         void LogWarning(string message);

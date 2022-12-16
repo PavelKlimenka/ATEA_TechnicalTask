@@ -19,11 +19,25 @@ namespace CLI
         private IRepository<ArgumentsRecord> _repository;
         private ILogger _logger;
 
-        public App()
+        public App(string[]? arguments = null)
         {
             _repository = new ArgumentsRepository();
             _requestedExit = false;
             _logger = new ConsoleLogger();
+
+            if(arguments != null && arguments.Length > 0)
+            {
+                if (arguments.Length != 2 || arguments.Any(e => e.Length > MaxArgumentLength))
+                {
+                    _logger.LogError("Invalid input arguments.");
+                }
+                else
+                {
+                    _arg1 = arguments[0];
+                    _arg2 = arguments[1];
+                    _repository.Insert(new ArgumentsRecord(_arg1, _arg2));
+                }
+            }
         }
 
         ~App()
@@ -166,7 +180,7 @@ namespace CLI
             Console.WriteLine();
             foreach (ArgumentsRecord record in records) 
             {
-                Console.WriteLine($"{record.Id}) Arg1 = {record.Arg1}; Arg2 = {record.Arg2}");
+                Console.WriteLine($"{record.Id}) Arg1 = {record.Arg1}; Arg2 = {record.Arg2};");
             }
         }
 

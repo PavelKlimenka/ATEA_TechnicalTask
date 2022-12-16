@@ -1,7 +1,6 @@
-﻿
-using CLI.Interfaces;
+﻿using ATEA_TechnicalTask.Shared.Interfaces;
 
-namespace CLI.Utils
+namespace ATEA_TechnicalTask.Shared
 {
     public class ConsoleLogger : ILogger
     {

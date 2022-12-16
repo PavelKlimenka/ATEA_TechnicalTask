@@ -1,4 +1,4 @@
-﻿namespace CLI.Interfaces
+﻿namespace ATEA_TechnicalTask.Shared.Interfaces
 {
     public interface ILogger
     {

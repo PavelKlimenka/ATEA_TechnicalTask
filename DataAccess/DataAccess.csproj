@@ -10,4 +10,8 @@
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ATEA_TechnicalTask.Shared\ATEA_TechnicalTask.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

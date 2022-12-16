@@ -1,5 +1,5 @@
-﻿using CLI.Interfaces;
-using CLI.Utils;
+﻿using ATEA_TechnicalTask.Shared;
+using ATEA_TechnicalTask.Shared.Interfaces;
 using CLI.Utils.Exceptions;
 using CLI.Utils.Extensions;
 using DataAccess;
@@ -21,9 +21,9 @@ namespace CLI
 
         public App(string[]? arguments = null)
         {
-            _repository = new ArgumentsRepository();
             _requestedExit = false;
             _logger = new ConsoleLogger();
+            _repository = new ArgumentsRepository(_logger);
 
             if(arguments != null && arguments.Length > 0)
             {
@@ -52,13 +52,12 @@ namespace CLI
 
         public async Task Run()
         {
-            Console.WriteLine("Welcome to ATEA Technical Task program.");
+            Console.WriteLine("Welcome to ATEA Technical Task program.\n");
 
             while(!_requestedExit)
             {
                 try
                 {
-                    Console.WriteLine();
                     PrintArguments();
                     await ExecuteAction(PrintMenu().Key);
                     PrintSeparator();
@@ -80,12 +79,12 @@ namespace CLI
 
         private ConsoleKeyInfo PrintMenu()
         {
-            Console.WriteLine($"({ConsoleKey.S})et arguments");
-            if(ArgumentsAreValid()) Console.WriteLine($"({ConsoleKey.A})dd arguments to each other");
-            Console.WriteLine($"({ConsoleKey.L})ist previous arguments (database)");
-            Console.WriteLine($"({ConsoleKey.F})etch and set arguments from database by number");
-            Console.WriteLine($"({ConsoleKey.D})elete arguments from database by number");
-            Console.WriteLine($"({ConsoleKey.Q})uit");
+            Console.WriteLine($"> ({ConsoleKey.S})et arguments");
+            if(ArgumentsAreValid()) Console.WriteLine($"> ({ConsoleKey.A})dd arguments to each other");
+            Console.WriteLine($"> ({ConsoleKey.L})ist previous arguments (database)");
+            Console.WriteLine($"> ({ConsoleKey.F})etch and set arguments from database by number");
+            Console.WriteLine($"> ({ConsoleKey.D})elete arguments from database by number");
+            Console.WriteLine($"> ({ConsoleKey.Q})uit");
 
             return Console.ReadKey(true);
         }
@@ -109,7 +108,7 @@ namespace CLI
                     {
                         List<ArgumentsRecord> records = await _repository.GetAll();
                         if (records.Count == 0)
-                            Console.WriteLine("\nDatabase is empty!");
+                            Console.WriteLine("\nDatabase didn't return any records!");
                         else
                             PrintDatabaseRecords(records.ToArray());
                         break;
@@ -190,11 +189,11 @@ namespace CLI
             string? input = Console.ReadLine();
 
             if(string.IsNullOrEmpty(input) || !int.TryParse(input, out int inputInt))
-                throw new InvalidInputException("not a integer number");
+                throw new InvalidInputException("not an integer number");
 
             ArgumentsRecord record = await _repository.GetById(inputInt);
             if (string.IsNullOrEmpty(record.Arg1) || string.IsNullOrEmpty(record.Arg2))
-                throw new InvalidInputException($"record with the number {input} doesn't exist in database");
+                throw new InvalidInputException($"record with the number {input} doesn't exist in the database");
 
             _arg1 = record.Arg1;
             _arg2 = record.Arg2;
@@ -210,8 +209,6 @@ namespace CLI
                 throw new InvalidInputException("not a integer number");
 
             await _repository.Delete(new ArgumentsRecord() { Id = inputInt });
-
-            Console.WriteLine("\nRecord was deleted");
         }
 
     }
